@@ -1,0 +1,63 @@
+#!/bin/bash
+# postinst — 安装完成后自动执行
+# 由 dpkg 以 root 身份运行，$1 = "configure"
+set -e
+
+case "$1" in
+    configure)
+
+        # ── 0. 导入 GPG 公钥到系统 apt 信任列表 ───────────────────────────────
+        PUBKEY_FILE="/usr/share/teacher-nas/teacher-nas-key.gpg"
+        if [ -f "$PUBKEY_FILE" ]; then
+            # 优先使用新版方式（/etc/apt/trusted.gpg.d/）
+            TRUSTED_DIR="/etc/apt/trusted.gpg.d"
+            if [ -d "$TRUSTED_DIR" ]; then
+                cp "$PUBKEY_FILE" "$TRUSTED_DIR/teacher-nas.gpg" 2>/dev/null || true
+            fi
+            # 同时兼容旧版 apt-key（Debian 10 / UOS）
+            if command -v apt-key >/dev/null 2>&1; then
+                apt-key add "$PUBKEY_FILE" 2>/dev/null || true
+            fi
+            # 导入到系统 GPG keyring（dpkg-sig 验签用）
+            gpg --no-default-keyring \
+                --keyring /usr/share/keyrings/teacher-nas.gpg \
+                --import "$PUBKEY_FILE" 2>/dev/null || true
+        fi
+
+        # ── 1. 配置 mount/umount sudo 免密（对所有普通用户生效）────────────────
+        SUDOERS_FILE="/etc/sudoers.d/teacher-nas"
+        if [ ! -f "$SUDOERS_FILE" ]; then
+            cat > "$SUDOERS_FILE" << 'EOF'
+# 教师文件夹 NAS 登录器 - 允许挂载 SMB 共享无需密码
+%users ALL=(ALL) NOPASSWD: /bin/mount, /bin/umount, /usr/bin/mount, /usr/bin/umount
+EOF
+            chmod 440 "$SUDOERS_FILE"
+            # 验证语法，失败则回滚
+            if ! visudo -cf "$SUDOERS_FILE" 2>/dev/null; then
+                rm -f "$SUDOERS_FILE"
+            fi
+        fi
+
+        # ── 2. 刷新桌面图标缓存 ────────────────────────────────────────────────
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database /usr/share/applications/ || true
+        fi
+        if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+            gtk-update-icon-cache /usr/share/pixmaps/ 2>/dev/null || true
+        fi
+
+        # ── 3. 为每个已登录用户创建 NAS 挂载目录 ─────────────────────────────
+        for HOME_DIR in /home/*; do
+            [ -d "$HOME_DIR" ] || continue
+            NAS_DIR="$HOME_DIR/NAS"
+            if [ ! -d "$NAS_DIR" ]; then
+                mkdir -p "$NAS_DIR"
+                USER_NAME=$(basename "$HOME_DIR")
+                chown "$USER_NAME": "$NAS_DIR" 2>/dev/null || true
+            fi
+        done
+
+    ;;
+esac
+
+exit 0
