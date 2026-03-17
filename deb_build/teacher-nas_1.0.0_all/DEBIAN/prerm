@@ -1,0 +1,19 @@
+#!/bin/bash
+# prerm — 卸载前执行清理
+set -e
+
+case "$1" in
+    remove|purge)
+
+        # 移除 sudoers 规则
+        rm -f /etc/sudoers.d/teacher-nas
+
+        # 刷新桌面数据库
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database /usr/share/applications/ || true
+        fi
+
+    ;;
+esac
+
+exit 0
