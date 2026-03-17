@@ -1,0 +1,29 @@
+# 生成的 deb 包（体积大，不入库）
+*.deb
+*_unsigned.deb
+
+# assets 图片（学校版权图片，不公开）
+assets/background.jpg
+assets/logo.png
+
+# GPG 密钥文件（绝对不能上传）
+*.asc
+*.gpg
+teacher-nas-key.*
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 编辑器 / 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# 日志
+*.log
