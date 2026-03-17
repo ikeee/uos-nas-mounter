@@ -1,0 +1,12 @@
+Package: teacher-nas
+Version: 1.0.0
+Section: net
+Priority: optional
+Architecture: all
+Depends: python3, python3-gi, python3-gi-cairo, gir1.2-gtk-3.0, cifs-utils
+Maintainer: SZU Education Group <admin@szufl.edu.cn>
+Description: 教师文件夹 NAS 登录器
+ 深圳大学附属教育集团外国语中学教师文件夹挂载工具。
+ 登录后自动挂载三个 NAS 共享目录：照片和视频、公共空间、homes。
+ .
+ 支持平台：统信 UOS ARM64 (Debian)
