@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=教师文件夹
+Name[zh_CN]=教师文件夹
+Comment=NAS 共享目录登录挂载工具
+Comment[zh_CN]=NAS 共享目录登录挂载工具
+Exec=/usr/bin/teacher-nas
+Icon=teacher-nas
+Terminal=false
+Categories=Network;FileManager;
+StartupNotify=true
+Keywords=NAS;SMB;教师;文件夹;挂载;
